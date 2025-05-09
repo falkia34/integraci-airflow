@@ -1,0 +1,1 @@
+./cloud-sql-proxy --credentials-file <file-json> <host> --port <port>
