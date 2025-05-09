@@ -1,0 +1,11 @@
+env
+access_account.json
+cloud-sql-proxy 
+airflow/standalone_admin_password.txt
+logs/
+cloud_sql_proxy_access.sh
+__pycache__
+config
+.env
+*.db
+*.csv
