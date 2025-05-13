@@ -1,0 +1,332 @@
+[
+  {
+    "service_name": "servicebaru",
+    "application": "aplikasibaru",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "delapan",
+    "application": "aplikasibaru",
+    "service_type": "frontend"
+  },
+  {
+    "service_name": "servicebaru2",
+    "application": "aplikasibaru2",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "servicebaru9",
+    "application": "aplikasibaru3",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "servicebaruuuu",
+    "application": "aplikasibaru3",
+    "service_type": "frontend"
+  },
+  {
+    "service_name": "servicebaru8",
+    "application": "aplikasibaru3",
+    "service_type": "frontend"
+  },
+  {
+    "service_name": "servicelast",
+    "application": "aplikasilast",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "servicelast1",
+    "application": "aplikasilast",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "servicelast3",
+    "application": "aplikasilast",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "servicelastt2",
+    "application": "aplikasilast",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "servicelastt",
+    "application": "aplikasilast",
+    "service_type": "frontend"
+  },
+  {
+    "service_name": "servicesembilan12",
+    "application": "app0817",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "service-gagas-9",
+    "application": "app-gagas-1",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "service-gagas-545454",
+    "application": "app-gagas-2",
+    "service_type": "frontend"
+  },
+  {
+    "service_name": "cobaja",
+    "application": "bizops",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "apps-divistant-setting",
+    "application": "bizops",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "details",
+    "application": "bizops",
+    "service_type": "frontend"
+  },
+  {
+    "service_name": "cobaja",
+    "application": "bizops",
+    "service_type": "frontend"
+  },
+  {
+    "service_name": "apps-divistant-dashboard",
+    "application": "bizops",
+    "service_type": "frontend"
+  },
+  {
+    "service_name": "compro-cms",
+    "application": "company-profile",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "compro-website-nuxt",
+    "application": "company-profile",
+    "service_type": "frontend"
+  },
+  {
+    "service_name": "expressjs-boilerplate",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "asdasdas",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "testing921",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "test-gagas-rollback-2",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "testrollback2",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "testrollback1",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "servicesembilan",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "servicesembilan11",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "testrollback9",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "integraci-be-ejs",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "testrollback",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "testrollback3",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "testrollback4",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "testrollback6",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "apache-camel",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "testing92",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "servicenew",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "test-gagas-rollback-1",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "testrollback6",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "testrollback7",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "servicesembilan12",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "seratus",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "seratusdua",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "ici-sample-service2",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "ici-test-service2",
+    "application": "integraci",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "test-relation-pipeline",
+    "application": "integraci",
+    "service_type": "frontend"
+  },
+  {
+    "service_name": "contoh",
+    "application": "integraci",
+    "service_type": "frontend"
+  },
+  {
+    "service_name": "cobaaja1x",
+    "application": "integraci",
+    "service_type": "frontend"
+  },
+  {
+    "service_name": "cobaaja1",
+    "application": "integraci",
+    "service_type": "frontend"
+  },
+  {
+    "service_name": "ddff",
+    "application": "integraci",
+    "service_type": "frontend"
+  },
+  {
+    "service_name": "AriService",
+    "application": "integraci",
+    "service_type": "frontend"
+  },
+  {
+    "service_name": "cobaaja",
+    "application": "integraci",
+    "service_type": "frontend"
+  },
+  {
+    "service_name": "integraci-dashboard",
+    "application": "integraci",
+    "service_type": "frontend"
+  },
+  {
+    "service_name": "odoo-middleware",
+    "application": "odoo",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "w-sample-1",
+    "application": "odoo",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "w-be-end-to-end",
+    "application": "odoo",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "dd",
+    "application": "odoo",
+    "service_type": "frontend"
+  },
+  {
+    "service_name": "w-sample-2",
+    "application": "odoo",
+    "service_type": "frontend"
+  },
+  {
+    "service_name": "service1",
+    "application": "sebelas",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "testduatujuh",
+    "application": "siti",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "testrollback9",
+    "application": "test-rollback4",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "test-gagas-rollback-3",
+    "application": "w22-autocreateapp-gagas3",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "servicedhimazz",
+    "application": "w22-autocreateapp-gagas3",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "w-be-end-to-end",
+    "application": "w-end-to-end",
+    "service_type": "backend"
+  },
+  {
+    "service_name": "testing-1231",
+    "application": "w-end-to-end",
+    "service_type": "backend"
+  }
+]

@@ -9,3 +9,5 @@ config
 .env
 *.db
 *.csv
+data
+.vscode/
