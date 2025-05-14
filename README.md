@@ -16,3 +16,14 @@ Lalu restart Airflow Webserver
 airflow standalone
 ```
 
+Ada beberapa variable yang bisa didefinisikan di Airflow UI agar script berjalan sesuai dengan yang diinginkan seperti 
+
+```
+extract_dir = 
+transform_dir = 
+num_workers = 
+target_table = 
+query_stmt = 
+```
+
+Dag yang digunakan adalah `migrate_gitlab_directus.py`

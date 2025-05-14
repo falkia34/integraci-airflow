@@ -4,10 +4,17 @@ import json
 import polars as pl
 import requests
 import os
-import pandas as pd
 
 @task
 def extract_data_from_db(hook,target_dir=None,query_stmt = None, ti=None):
+    """
+    Extract data from a database and save it to a file.
+    Args:
+        hook: Database connection hook.
+        target_dir: Directory to save the extracted data.
+        query_stmt: SQL query to extract data.
+        ti: Task instance for XCom communication.
+    """
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     file_path = f"{target_dir}/extract_db_data_{timestamp}.parquet"
 
@@ -21,8 +28,16 @@ def extract_data_from_db(hook,target_dir=None,query_stmt = None, ti=None):
 
 @task
 def data_split_worker(extract_id,target_dir, num_workers,ti=None):
+    """
+    Split the DataFrame into chunks for parallel processing.
+    Args:
+        extract_id: Task ID of the data extraction task.
+        target_dir: Directory to save the split data.
+        num_workers: Number of workers to split the data into.
+        ti: Task instance for XCom communication.
+    """
+
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-    
     extract_path = ti.xcom_pull(task_ids=extract_id, key="extract_path")
     num_rows = ti.xcom_pull(task_ids=extract_id, key="extract_num_rows")
     df = pl.scan_parquet(extract_path)
@@ -46,14 +61,25 @@ def data_split_worker(extract_id,target_dir, num_workers,ti=None):
 @task
 def extract_data_from_api(target_dir=None, 
                           chunk = None, 
-                          api_url="https://gitlab.com/api/v4/projects/divistant.com%2Fdemo%2Finternal-demo%2Fapplications%2F{application}%2F{service_type}%2F{service_name}/languages", headers=None, params=None, ti=None):
+                          api_url="https://gitlab.com/api/v4/projects/divistant.com%2Fdemo%2Finternal-demo%2Fapplications%2F{application}%2F{service_type}%2F{service_name}/languages", 
+                          headers=None, 
+                          params=None, 
+                          ti=None):
+    '''
+    Extract data from API and save it to a file.
+    Args:
+        target_dir: Directory to save the extracted data.
+        chunk: Chunk number for the current worker.
+        api_url: API URL to fetch data from.
+        headers: Headers for the API request.
+        params: Parameters for the API request.
+        ti: Task instance for XCom communication.
+    '''
     
     token = os.getenv("GITLAB_TOKEN")
     print(f"Token: {token}")
-
-
     headers = {"PRIVATE-TOKEN":token}
-    
+
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     file_path = f"{target_dir}/extract_api_data_{chunk}_{timestamp}.parquet"
     chunk_path = ti.xcom_pull(key = f"chunk_{chunk}_path")
@@ -62,7 +88,7 @@ def extract_data_from_api(target_dir=None,
 
     data_api = []
     
-
+    
     for row in chunk_df.iter_rows(named=True):
         application = row["application"]
         service_name = row["service_name"]
@@ -100,6 +126,22 @@ def extract_data_from_api(target_dir=None,
 
 @task
 def upsert_with_mogrify(hook,num_workers=None, target_table = None , ti=None):
+    """
+    Perform upsert operation using mogrify for efficient batch insertion.
+
+    Args:
+        hook: Database connection hook.
+        num_workers: Number of workers used for data extraction.
+        target_table: Target table for upsert operation.
+        ti: Task instance for XCom communication.
+
+    Steps:
+        1. Collect all file paths from XCom for the extracted API data.
+        2. Read the data from the files into a single DataFrame.
+        3. Convert the DataFrame into a list of dictionaries for insertion.
+        4. Use mogrify to prepare a batch SQL query for upsert.
+        5. Execute the query and commit the transaction.
+    """
     # Collect all the file paths from XCom
     file_paths = []
     for i in range(num_workers):
@@ -137,7 +179,14 @@ def upsert_with_mogrify(hook,num_workers=None, target_table = None , ti=None):
 
 @task
 def delete_files(ti=None):
+    """
+    Delete the files created during the DAG run.
+    Args:
+        ti: Task instance for XCom communication.
+    """
+    # Collect all the file paths from XCom
     all_file_paths = ti.xcom_pull(key="all_file_paths")
+    # Delete the files
     for file_path in all_file_paths:
         if os.path.exists(file_path):
             os.remove(file_path)

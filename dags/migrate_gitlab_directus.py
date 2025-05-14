@@ -23,12 +23,14 @@ default_args = {
     tags=["aditya", "modular"],
 )
 def migrate_app(): 
+    """
+    DAG untuk memigrasi data dari Gitlab ke Directus
+    """
     extract_dir = Variable.get("extract_dir",default_var = '/home/aditya/coding-aditya/aditya_airflow/data/extract')
     transform_dir = Variable.get("transform_dir",'/home/aditya/coding-aditya/aditya_airflow/data/transform')
     directus_conn_hook = PostgresHook(postgres_conn_id="directus")
     num_workers = int(Variable.get("num_workers", default_var=3 )) # Mengambil jumlah worker dari Airflow Variable, default 3
     target_table = Variable.get("target_table", default_var = 'dev.cicd_app_service_languages_wh')
-
     query_stmt = """SELECT
                         s.service_name,
                         a.application,
@@ -50,6 +52,7 @@ def migrate_app():
                     ORDER BY
                         2,3;
                 """
+    query_stmt = Variable.get("query_stmt", default_var = query_stmt)
 
     extract = extract_data_from_db(hook=directus_conn_hook, target_dir=extract_dir, query_stmt=query_stmt)
     data_splited = data_split_worker.override(task_id = 'data_split_worker')(extract_id="extract_data_from_db",target_dir= transform_dir, num_workers=num_workers)
