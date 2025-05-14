@@ -27,7 +27,7 @@ def migrate_app():
     transform_dir = Variable.get("transform_dir",'/home/aditya/coding-aditya/aditya_airflow/data/transform')
     directus_conn_hook = PostgresHook(postgres_conn_id="directus")
     num_workers = int(Variable.get("num_workers", default_var=3 )) # Mengambil jumlah worker dari Airflow Variable, default 3
-
+    target_table = Variable.get("target_table", default_var = 'dev.cicd_app_service_languages_wh')
 
     query_stmt = """SELECT
                         s.service_name,
@@ -58,12 +58,13 @@ def migrate_app():
         extracted_worker = extract_data_from_api.override(task_id = f'extract_data_from_api_{i}')(target_dir=extract_dir, chunk = i)
         extracted_workers.append(extracted_worker)
 
-    
+    upserted = upsert_with_mogrify.override(task_id = 'upsert_with_mogrify')(hook=directus_conn_hook, num_workers=num_workers, target_table=target_table)
+    deleted = delete_files.override(task_id = 'delete_from_table')()
 
 
     # Chain the tasks
     
     for i in range(num_workers):
-        chain(extract,data_splited, extracted_workers[i])
+        chain(extract,data_splited, extracted_workers[i], upserted,deleted)
 
 migrate_app_dag = migrate_app()

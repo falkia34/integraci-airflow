@@ -29,6 +29,7 @@ def data_split_worker(extract_id,target_dir, num_workers,ti=None):
     # Split the DataFrame into chunks
     chunk_size = num_rows // num_workers
     
+    all_file_paths = [extract_path]
     
     for i in range(num_workers):
         file_path = f"{target_dir}/data_split_worker_{i}_{timestamp}.parquet"
@@ -37,7 +38,9 @@ def data_split_worker(extract_id,target_dir, num_workers,ti=None):
         chunk = df.slice(start, end - start)
         chunk.sink_parquet(file_path, compression = 'uncompressed')
         ti.xcom_push(key=f"chunk_{i}_path", value=file_path)
+        all_file_paths.append(file_path)
     
+    ti.xcom_push(key="all_file_paths", value=all_file_paths)
     print(f"Data split into {num_workers} chunks and saved to {target_dir}")
 
 @task
@@ -76,7 +79,7 @@ def extract_data_from_api(target_dir=None,
                     "application": application,
                     "service_name": service_name,
                     "service_type": service_type,
-                    "data": json.dumps(data)
+                    "script_languages": json.dumps(data)
                 }
                 data_api.append(new_data)
                     
@@ -87,22 +90,58 @@ def extract_data_from_api(target_dir=None,
     print(f"Data from API: {df}")   
     df.write_parquet(file_path, compression = None)
     ti.xcom_push(key=f"extract_api_data_{chunk}_path", value=file_path)
+    all_file_paths = ti.xcom_pull(key="all_file_paths")
+    all_file_paths.append(file_path)
+    ti.xcom_push(key="all_file_paths", value=all_file_paths)
     print(f"Data extracted from API and saved to {file_path}")
     
 
- # collect all the data from the chunks and load to db   
+
+
 @task
-def load_data_to_db(hook, num_workers=None, ti=None):
+def upsert_with_mogrify(hook,num_workers=None, target_table = None , ti=None):
+    # Collect all the file paths from XCom
     file_paths = []
     for i in range(num_workers):
         file_path = ti.xcom_pull(key=f"extract_api_data_{i}_path")
-    
-    data = pl.read_parquet(file_path).to_dicts()
-
-    # load to postgres with upsert batch
-    # create a connection to the database
+        file_paths.append(file_path)
+    # Read the data from the files into a single DataFrame
+    df = pl.read_parquet(file_paths)
+    data = df.to_dicts()
     conn = hook.get_conn()
+
+    print(f"Data to be inserted: {data}")
+
+
+    # Prepare one large SQL string
+    with conn.cursor() as cur:
+        values_str = ",".join(
+            cur.mogrify("(%(application)s, %(service_name)s, %(service_type)s, %(script_languages)s )", row).decode("utf-8")
+            for row in data
+        )
+
+        query = f"""
+            INSERT INTO {target_table} ( 
+                application,
+                service_name,
+                service_type,
+                script_languages
+            )
+            VALUES {values_str}
+            ON CONFLICT (application, service_name, service_type) DO UPDATE
+            SET script_languages = EXCLUDED.script_languages;
+        """
+        cur.execute(query)
+    conn.commit()
     
 
+@task
+def delete_files(ti=None):
+    all_file_paths = ti.xcom_pull(key="all_file_paths")
+    for file_path in all_file_paths:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            print(f"Deleted file: {file_path}")
+        else:
+            print(f"File not found: {file_path}")
     
-        
