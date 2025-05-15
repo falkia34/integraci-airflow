@@ -2,6 +2,7 @@ env
 access_account.json
 cloud-sql-proxy 
 airflow/standalone_admin_password.txt
+*passwords*
 logs/
 cloud_sql_proxy_access.sh
 __pycache__
@@ -11,3 +12,4 @@ config
 *.csv
 data
 .vscode/
+env310

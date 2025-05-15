@@ -4,9 +4,11 @@ import json
 import polars as pl
 import requests
 import os
+from airflow.models import XCom
 
 @task
 def extract_data_from_db(hook,target_dir=None,query_stmt = None, ti=None):
+    print(f'target_dir: {target_dir}')
     """
     Extract data from a database and save it to a file.
     Args:
@@ -21,13 +23,13 @@ def extract_data_from_db(hook,target_dir=None,query_stmt = None, ti=None):
     df = pl.read_database(query_stmt, connection=hook.get_conn())
     print(f"Data from DB: {df}")
     df.write_parquet(file_path, compression = None)
-    ti.xcom_push(key="extract_path", value=file_path)
     ti.xcom_push(key = 'extract_num_rows', value = df.height) 
     print(f"Data extracted and saved to {file_path}")
+    return file_path
 
 
 @task
-def data_split_worker(extract_id,target_dir, num_workers,ti=None):
+def data_split_worker(extract_path,target_dir, num_workers,ti=None):
     """
     Split the DataFrame into chunks for parallel processing.
     Args:
@@ -38,32 +40,33 @@ def data_split_worker(extract_id,target_dir, num_workers,ti=None):
     """
 
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-    extract_path = ti.xcom_pull(task_ids=extract_id, key="extract_path")
-    num_rows = ti.xcom_pull(task_ids=extract_id, key="extract_num_rows")
+    num_rows = ti.xcom_pull(task_ids='extract_data_from_db', key="extract_num_rows")
     df = pl.scan_parquet(extract_path)
     # Split the DataFrame into chunks
     chunk_size = num_rows // num_workers
     
     all_file_paths = [extract_path]
     
+    all_chunks_path = []
+
     for i in range(num_workers):
         file_path = f"{target_dir}/data_split_worker_{i}_{timestamp}.parquet"
         start = i * chunk_size
         end = (i + 1) * chunk_size if i != num_workers - 1 else num_rows
         chunk = df.slice(start, end - start)
         chunk.sink_parquet(file_path, compression = 'uncompressed')
-        ti.xcom_push(key=f"chunk_{i}_path", value=file_path)
+        all_chunks_path.append(file_path)
         all_file_paths.append(file_path)
     
     ti.xcom_push(key="all_file_paths", value=all_file_paths)
     print(f"Data split into {num_workers} chunks and saved to {target_dir}")
 
+    return all_chunks_path
+
 @task
 def extract_data_from_api(target_dir=None, 
                           chunk = None, 
                           api_url="https://gitlab.com/api/v4/projects/divistant.com%2Fdemo%2Finternal-demo%2Fapplications%2F{application}%2F{service_type}%2F{service_name}/languages", 
-                          headers=None, 
-                          params=None, 
                           ti=None):
     '''
     Extract data from API and save it to a file.
@@ -75,19 +78,20 @@ def extract_data_from_api(target_dir=None,
         params: Parameters for the API request.
         ti: Task instance for XCom communication.
     '''
-    
+    num_chunk = ti.map_index
+    print(f"Chunk number: {num_chunk}")
     token = os.getenv("GITLAB_TOKEN")
     print(f"Token: {token}")
     headers = {"PRIVATE-TOKEN":token}
 
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-    file_path = f"{target_dir}/extract_api_data_{chunk}_{timestamp}.parquet"
-    chunk_path = ti.xcom_pull(key = f"chunk_{chunk}_path")
+    file_path = f"{target_dir}/extract_api_data_{num_chunk}_{timestamp}.parquet"
+    chunk_path = chunk
     chunk_df = pl.scan_parquet(chunk_path)
     chunk_df = chunk_df.collect()
 
     data_api = []
-    
+
     
     for row in chunk_df.iter_rows(named=True):
         application = row["application"]
@@ -115,17 +119,18 @@ def extract_data_from_api(target_dir=None,
     df = pl.DataFrame(data_api)
     print(f"Data from API: {df}")   
     df.write_parquet(file_path, compression = None)
-    ti.xcom_push(key=f"extract_api_data_{chunk}_path", value=file_path)
-    all_file_paths = ti.xcom_pull(key="all_file_paths")
-    all_file_paths.append(file_path)
-    ti.xcom_push(key="all_file_paths", value=all_file_paths)
+    # all_file_paths = ti.xcom_pull(key="all_file_paths", map_index=-1)
+        # print('all_file_path= ',all_file_paths)
+        # all_file_paths.append(file_path)
+    # ti.xcom_push(key="all_file_paths", value=all_file_paths, map_index=-1)
     print(f"Data extracted from API and saved to {file_path}")
+    return file_path
     
 
 
 
 @task
-def upsert_with_mogrify(hook,num_workers=None, target_table = None , ti=None):
+def upsert_with_mogrify(hook,files_path = None, target_table = None , ti=None):
     """
     Perform upsert operation using mogrify for efficient batch insertion.
 
@@ -142,13 +147,8 @@ def upsert_with_mogrify(hook,num_workers=None, target_table = None , ti=None):
         4. Use mogrify to prepare a batch SQL query for upsert.
         5. Execute the query and commit the transaction.
     """
-    # Collect all the file paths from XCom
-    file_paths = []
-    for i in range(num_workers):
-        file_path = ti.xcom_pull(key=f"extract_api_data_{i}_path")
-        file_paths.append(file_path)
     # Read the data from the files into a single DataFrame
-    df = pl.read_parquet(file_paths)
+    df = pl.read_parquet(files_path)
     data = df.to_dicts()
     conn = hook.get_conn()
 
@@ -179,18 +179,12 @@ def upsert_with_mogrify(hook,num_workers=None, target_table = None , ti=None):
 
 @task
 def delete_files(ti=None):
-    """
-    Delete the files created during the DAG run.
-    Args:
-        ti: Task instance for XCom communication.
-    """
-    # Collect all the file paths from XCom
-    all_file_paths = ti.xcom_pull(key="all_file_paths")
-    # Delete the files
-    for file_path in all_file_paths:
-        if os.path.exists(file_path):
-            os.remove(file_path)
-            print(f"Deleted file: {file_path}")
-        else:
-            print(f"File not found: {file_path}")
+    data_dir = os.path.join(os.getcwd(), "data")
     
+    # delete all parquet files in the data directory
+    for root, dirs, files in os.walk(data_dir):
+        for file in files:
+            if file.endswith(".parquet"):
+                file_path = os.path.join(root, file)
+                os.remove(file_path)
+                print(f"Deleted file: {file_path}")
