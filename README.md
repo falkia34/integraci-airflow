@@ -36,7 +36,7 @@ Mengatur PostgreSQL sebagai pengganti SQLite agar dapat mengaktifkan fitur Local
 
 
 
-Ada beberapa variable yang bisa didefinisikan di Airflow UI agar script berjalan sesuai dengan yang diinginkan seperti 
+Ada beberapa variable yang bisa didefinisikan di Airflow UI agar script berjalan sesuai dengan yang diinginkan seperti (Opstional but recommended)
 
 ```
 extract_dir = 

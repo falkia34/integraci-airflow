@@ -1,7 +1,7 @@
 # Pastikan menggunakan Python versi 3.10.
 # Pastikan file .env telah terisi dengan konfigurasi yang diperlukan sebelum menjalankan kode ini.
 
-python3.10 -m venv enn310
+python3.10 -m venv env310
 source enn310/bin/activate
 source .env
 echo "AIRFLOW_HOME ${AIRFLOW_HOME}"
