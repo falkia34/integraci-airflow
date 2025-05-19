@@ -22,13 +22,13 @@ Mengatur PostgreSQL sebagai pengganti SQLite agar dapat mengaktifkan fitur Local
     ```
 3. Isikan semua variables di `.env`
     ```bash 
-    export AIRFLOW_HOME= #"<path to your airflow home>"
-    export PYTHONPATH= #"<directory where you have arranged your modules>"
+    export AIRFLOW_HOME= #"<path to your airflow home> /path-to/airflow_3.10" 
+    export PYTHONPATH= #"<directory where you have arranged your modules> /path-to/top-of-dags"
     export AIRFLOW__CORE__FERNET_KEY= # "<for encryption in variables>"
     export GITLAB_TOKEN= # "<your gitlab token>"
     export AIRFLOW__DATABASE__SQL_ALCHEMY_CONN= # "<connection string for your database>"
     export AIRFLOW__CORE__EXECUTOR= # "<executor type> [LocalExecutor, CeleryExecutor, SequentialExecutor]>"
-    export AIRFLOW__CORE__DAGS_FOLDER= # "<path to your dags folder>"```
+    export AIRFLOW__CORE__DAGS_FOLDER= # "<path to your dags folder> /path-to-/dags"```
 4. Lalu jalankan file `execute_file.sh`
     ```bash
     bash execute_file.sh
