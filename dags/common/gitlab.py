@@ -15,7 +15,7 @@ def extract_lang_from_gitlab_api(
     ti: TaskInstance = None,
 ):
     """
-    Extract languages data from GitLab API for each chunk of data.
+    Extract languages data from GitLab API.
 
     Args:
         file_path: Path to the file containing the data to be processed.
