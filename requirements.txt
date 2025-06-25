@@ -1,4 +1,2 @@
-polars==1.8.2
-flask-appbuilder
+polars-lts-cpu==1.31.0
 apache-airflow[postgres]
-
