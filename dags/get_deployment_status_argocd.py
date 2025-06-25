@@ -34,10 +34,13 @@ def get_deployment_status_argocd():
 
     # Mengambil jumlah worker dari Airflow Variable, default 3
     num_workers = int(Variable.get("num_workers", default=3))
-    extract_dir = Variable.get(
-        "extract_dir", default=f'{os.getcwd()}/data/extract')
-    transform_dir = Variable.get(
-        "transform_dir", default=f'{os.getcwd()}/data/transform')
+    run_id = "{{ run_id }}"
+    extract_dir = str(Variable.get(
+        "extract_dir", default=f'{os.getcwd()}/data/extract'
+    )) + "/" + run_id
+    transform_dir = str(Variable.get(
+        "transform_dir", default=f'{os.getcwd()}/data/transform'
+    )) + "/" + run_id
 
     directus_conn_hook = PostgresHook(postgres_conn_id="directus")
     extract_vars_query = """
