@@ -21,7 +21,7 @@ default_args = {
     dag_display_name="Get Deployment Status from ArgoCD",
     default_args=default_args,
     description="Ambil status deployment dari ArgoCD dan simpan ke Directus",
-    schedule="0 0 * * * *",  # Setiap hari jam 00:00
+    schedule="0 * * * *",  # Setiap jam
     start_date=datetime.now() - timedelta(days=1),
     max_active_runs=1,  # Memastikan hanya satu run aktif agar tidak ada tumpang tindih
     catchup=False,
