@@ -67,6 +67,12 @@ def get_deployment_status_argocd():
         ORDER BY
             1, 3;
     """
+    extract_envs_query = """
+        SELECT
+            environment
+        FROM
+            public.cicd_environment;
+    """
     update_deployment_status_query = """
         UPDATE public.cicd_application_service
         SET status = %(status)s
@@ -78,7 +84,14 @@ def get_deployment_status_argocd():
     created_dirs = create_dirs(
         dirs=[extract_dir, transform_dir],
     )
-    extracted_vars_path = extract_data_from_db(
+    extracted_envs_path = extract_data_from_db(
+        db_hook=directus_conn_hook,
+        extract_dir=extract_dir,
+        query=extract_envs_query,
+    )
+    extracted_vars_path = extract_data_from_db.override(
+        task_id="extract_vars_from_db",
+    )(
         db_hook=directus_conn_hook,
         extract_dir=extract_dir,
         query=extract_vars_query,
@@ -87,20 +100,21 @@ def get_deployment_status_argocd():
         file_path=extracted_vars_path,  # type: ignore
         transform_dir=transform_dir,
         num_workers=num_workers,
+        extract_task_id="extract_vars_from_db",
     )
-    extracted_languages_path = extract_status_from_argocd_api.partial(
+    extracted_statuses_path = extract_status_from_argocd_api.partial(
         extract_dir=extract_dir,
-        environments=["develop", "test", "staging", "production"]
+        envs_path=extracted_envs_path,
     ).expand(
         file_path=splitted_vars_path,
     )
     updated_data = update_data_on_db(
         db_hook=directus_conn_hook,
-        file_path=extracted_languages_path,  # type: ignore
+        file_path=extracted_statuses_path,  # type: ignore
         query=update_deployment_status_query,
     )
 
-    created_dirs >> extracted_vars_path
+    created_dirs >> extracted_envs_path >> extracted_vars_path
     updated_data >> delete_dirs(
         dirs=[extract_dir, transform_dir],
     )

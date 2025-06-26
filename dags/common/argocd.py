@@ -10,7 +10,7 @@ import os
 @task(task_id='extract_status_from_argocd_api', task_display_name='Extract Deployment Status from ArgoCD API')
 def extract_status_from_argocd_api(
     file_path: str,
-    environments: list[str],
+    envs_path: str,
     extract_dir: str,
     api_url: str = "https://gitops-temp.divistant.net/api/v1/applications/{service_type}-{service_name}-{env}-{cluster}",
     ti: TaskInstance = None,
@@ -20,7 +20,7 @@ def extract_status_from_argocd_api(
 
     Args:
         file_path: Path to the file containing the data to be processed.
-        environments: List of environments of the applications.
+        envs_path: Path to the file containing the environments.
         extract_dir: Directory to save the extracted data.
         api_url: API URL template to fetch data from.
         ti: Task instance for XCom communication.
@@ -37,6 +37,9 @@ def extract_status_from_argocd_api(
     else:
         result_path = f"{extract_dir}/argocd_api_data_{chunk_num}_{timestamp}.parquet"
     print(f'Result path: {result_path}')
+
+    df_envs = pl.scan_parquet(envs_path)
+    environments = df_envs.collect().get_column("environment").to_list()
 
     df = pl.scan_parquet(file_path)
     df = df.collect()
