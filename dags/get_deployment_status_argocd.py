@@ -47,6 +47,7 @@ def get_deployment_status_argocd():
         SELECT
             a.application,
             a.id AS application_id,
+            s.id AS service_id,
             s.service_name,
             st.service_type,
             st.id AS service_type_id
@@ -79,6 +80,10 @@ def get_deployment_status_argocd():
         WHERE application = %(application_id)s
         AND service_name = %(service_name)s
         AND service_type = %(service_type_id)s;
+    """
+    insert_deployment_status_query = """
+        INSERT INTO cicd_application_service_status (id, service_id, status, date_created)
+        VALUES (%(id)s, %(service_id)s, %(status)s, %(date_created)s);
     """
 
     created_dirs = create_dirs(
@@ -113,9 +118,14 @@ def get_deployment_status_argocd():
         file_path=extracted_statuses_path,  # type: ignore
         query=update_deployment_status_query,
     )
+    inserted_data = update_data_on_db(
+        db_hook=directus_conn_hook,
+        file_path=extracted_statuses_path,  # type: ignore
+        query=insert_deployment_status_query,
+    )
 
     created_dirs >> extracted_envs_path >> extracted_vars_path
-    updated_data >> delete_dirs(
+    updated_data >> inserted_data >> delete_dirs(
         dirs=[extract_dir, transform_dir],
     )
 

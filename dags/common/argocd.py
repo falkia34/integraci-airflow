@@ -5,6 +5,7 @@ import json
 import polars as pl
 import requests
 import os
+import uuid
 
 
 @task(task_id='extract_status_from_argocd_api', task_display_name='Extract Deployment Status from ArgoCD API')
@@ -61,6 +62,7 @@ def extract_status_from_argocd_api(
                 cluster=cluster,
             )
             response = requests.get(url, headers=headers)
+            timestamp = datetime.now()
 
             if response.status_code == 200:
                 data = response.json()
@@ -85,11 +87,14 @@ def extract_status_from_argocd_api(
                 statuses[env] = "unknown"
 
         new_data = {
+            "id": str(uuid.uuid4()),
             "application_id": row["application_id"],
+            "service_id": row["service_id"],
             "service_name": service_name,
             "service_type": service_type,
             "service_type_id": row["service_type_id"],
-            "status": json.dumps(statuses, separators=(',', ':')).lower()
+            "status": json.dumps(statuses, separators=(',', ':')).lower(),
+            "date_created": timestamp.isoformat(),
         }
         data_api.append(new_data)
 
